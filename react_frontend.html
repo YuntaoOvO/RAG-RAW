@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReAct Particle Physics Research Framework</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@600;700&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Light mode (default) - Apple-inspired */
+        :root {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f7;
+            --accent-blue: #0071e3;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #34c759;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --text-primary: #1d1d1f;
+            --text-secondary: rgba(0, 0, 0, 0.56);
+            --text-muted: #86868b;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glow-blue: rgba(0, 113, 227, 0.2);
+            --glow-purple: rgba(139, 92, 246, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --code-bg: #f5f5f7;
+        }
+
+        /* Dark mode - when system prefers dark */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0a0e17;
+                --bg-secondary: #111827;
+                --bg-tertiary: #1f2937;
+                --accent-blue: #3b82f6;
+                --accent-purple: #8b5cf6;
+                --accent-cyan: #06b6d4;
+                --accent-emerald: #10b981;
+                --accent-amber: #f59e0b;
+                --accent-rose: #f43f5e;
+                --text-primary: #f9fafb;
+                --text-secondary: #9ca3af;
+                --text-muted: #6b7280;
+                --border-color: #374151;
+                --glow-blue: rgba(59, 130, 246, 0.3);
+                --glow-purple: rgba(139, 92, 246, 0.3);
+                --glass-bg: rgba(31, 41, 55, 0.8);
+                --glass-border: rgba(55, 65, 81, 0.5);
+                --code-bg: #0d1117;
+            }
+        }
+
+        /* Manual theme toggle support */
+        [data-theme="dark"] {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --accent-blue: #3b82f6;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-color: #374151;
+            --glass-bg: rgba(31, 41, 55, 0.8);
+            --glass-border: rgba(55, 65, 81, 0.5);
+            --code-bg: #0d1117;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f7;
+            --accent-blue: #0071e3;
+            --text-primary: #1d1d1f;
+            --text-secondary: rgba(0, 0, 0, 0.56);
+            --text-muted: #86868b;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --code-bg: #f5f5f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background - adapts to theme */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 113, 227, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 60%);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .background-animation {
+                background: 
+                    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 60%);
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .particle {
+                opacity: 0.4;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+            25% { transform: translateY(-100px) translateX(50px); opacity: 0.6; }
+            50% { transform: translateY(-50px) translateX(-30px); opacity: 0.4; }
+            75% { transform: translateY(-150px) translateX(20px); opacity: 0.5; }
+        }
+
+        /* Header - adapts to theme */
+        header {
+            background: var(--glass-bg);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px var(--glow-blue);
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .nav-tab.active {
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-cyan);
+        }
+
+        .theme-icon-dark { display: none; }
+        .theme-icon-light { display: inline; }
+
+        @media (prefers-color-scheme: dark) {
+            .theme-icon-dark { display: inline; }
+            .theme-icon-light { display: none; }
+        }
+
+        [data-theme="dark"] .theme-icon-dark { display: inline; }
+        [data-theme="dark"] .theme-icon-light { display: none; }
+        [data-theme="light"] .theme-icon-dark { display: none; }
+        [data-theme="light"] .theme-icon-light { display: inline; }
+
+        /* Main content */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 30px rgba(59, 130, 246, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card-icon.blue { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .card-icon.purple { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .card-icon.cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+        .card-icon.emerald { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
+        .card-icon.amber { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        /* Pipeline visualization */
+        .pipeline-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .pipeline-step {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pipeline-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        .pipeline-step:last-child::after {
+            display: none;
+        }
+
+        .pipeline-step:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 8px 30px rgba(6, 182, 212, 0.15);
+        }
+
+        .pipeline-step.active {
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .pipeline-step.completed {
+            border-color: var(--accent-emerald);
+        }
+
+        .pipeline-step.completed::before {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: var(--accent-emerald);
+            font-size: 0.9rem;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-weight: 600;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Chat interface */
+        .chat-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 1.5rem;
+            height: calc(100vh - 200px);
+        }
+
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            text-align: left;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.agent .message-bubble {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .thought-bubble {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 3px solid var(--accent-purple);
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .action-bubble {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .chat-input-container {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .chat-send {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px var(--glow-purple);
+        }
+
+        /* Sidebar */
+        .chat-sidebar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tool-list {
+            list-style: none;
+        }
+
+        .tool-item {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .tool-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .tool-item-name {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+        }
+
+        .tool-item-desc {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Pythia Generator */
+        .pythia-form {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-select, .form-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--glow-purple);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        /* Code display */
+        .code-container {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+        }
+
+        .code-copy {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .code-copy:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .code-content {
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .code-content {
+                color: #e6edf3;
+            }
+        }
+
+        .code-content .keyword { color: #ff7b72; }
+        .code-content .string { color: #a5d6ff; }
+        .code-content .comment { color: #8b949e; }
+        .code-content .function { color: #d2a8ff; }
+        .code-content .number { color: #79c0ff; }
+
+        /* Progress indicator */
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Workflow diagram */
+        .workflow-diagram {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .workflow-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .workflow-nodes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .workflow-nodes::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan), var(--accent-emerald));
+            z-index: 0;
+        }
+
+        .workflow-node {
+            width: 100px;
+            height: 100px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .workflow-node:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px var(--glow-blue);
+        }
+
+        .workflow-node-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .workflow-node-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .chat-container {
+                grid-template-columns: 1fr;
+            }
+            .chat-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .pipeline-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .pipeline-step::after {
+                display: none;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="particle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 25%; top: 60%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 45%; top: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 65%; top: 70%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 80%; top: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 90%; top: 80%; animation-delay: 5s;"></div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">⚛️</div>
+                <span class="logo-text">ReAct Physics</span>
+            </div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-section="overview">Overview</button>
+                <button class="nav-tab" data-section="pipeline">Pipeline</button>
+                <button class="nav-tab" data-section="agent">AI Agent</button>
+                <button class="nav-tab" data-section="pythia">Pythia8</button>
+                <button class="nav-tab" data-section="workflow">Workflow</button>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon-light">☀️</span>
+                    <span class="theme-icon-dark">🌙</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Overview Section -->
+        <section id="overview" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Pipeline Steps</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">AI Tools</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Physics Processes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Research Possibilities</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">🔬</div>
+                    <h2 class="card-title">ReAct Particle Physics Framework</h2>
+                </div>
+                <p style="color: var(--text-secondary); line-height: 1.7;">
+                    A Reason-Act (ReAct) framework for automated particle physics research. 
+                    This system can read literature reviews, identify research directions, 
+                    generate Pythia8 simulation code, execute experiments, and write research articles.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon purple">📚</div>
+                        <h3 class="card-title">Literature Analysis</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                        Extract future work items and research directions from academic papers.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon cyan">⚡</div>
+                        <h3 class="card-title">Pythia8 Simulations</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                        Generate and execute Monte Carlo event generation scripts.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon emerald">📝</div>
+                        <h3 class="card-title">Article Generation</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                        Automatically write research articles in LaTeX format.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pipeline Section -->
+        <section id="pipeline" class="section">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.5rem;">
+                Literature Review Pipeline
+            </h2>
+            
+            <div class="pipeline-container">
+                <div class="pipeline-step" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Query Generation</div>
+                    <div class="step-desc">AI generates search queries</div>
+                </div>
+                <div class="pipeline-step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">PDF Download</div>
+                    <div class="step-desc">Fetch papers from arXiv</div>
+                </div>
+                <div class="pipeline-step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Vector Database</div>
+                    <div class="step-desc">Create searchable index</div>
+                </div>
+                <div class="pipeline-step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Review Generation</div>
+                    <div class="step-desc">Write literature review</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon amber">▶️</div>
+                    <h3 class="card-title">Run Pipeline</h3>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Click on any step to run it individually, or run the complete pipeline.
+                </p>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="runFullPipeline()">Run Full Pipeline</button>
+                    <button class="btn btn-secondary" onclick="resetPipeline()">Reset</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="pipelineProgress"></div>
+                </div>
+            </div>
+
+            <div class="card" id="pipelineOutput" style="display: none;">
+                <div class="card-header">
+                    <div class="card-icon cyan">📄</div>
+                    <h3 class="card-title">Output</h3>
+                </div>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename">pipeline_output.log</span>
+                    </div>
+                    <pre class="code-content" id="pipelineLog"></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agent Section -->
+        <section id="agent" class="section">
+            <div class="chat-container">
+                <div class="chat-main">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message agent">
+                            <div class="message-label">ReAct Agent</div>
+                            <div class="message-bubble">
+                                👋 Hello! I'm the ReAct agent for particle physics research. 
+                                I can help you with:
+                                <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+                                    <li>Reading and analyzing literature reviews</li>
+                                    <li>Extracting future work items</li>
+                                    <li>Generating Pythia8 simulation scripts</li>
+                                    <li>Executing code and analyzing results</li>
+                                    <li>Writing research articles</li>
+                                </ul>
+                                How can I assist you today?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <textarea class="chat-input" id="chatInput" placeholder="Ask me about particle physics research..." rows="1"></textarea>
+                        <button class="chat-send" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+                <div class="chat-sidebar">
+                    <div class="sidebar-title">🛠️ Available Tools</div>
+                    <ul class="tool-list">
+                        <li class="tool-item">
+                            <div class="tool-item-name">read_file</div>
+                            <div class="tool-item-desc">Read tex, py, json files</div>
+                        </li>
+                        <li class="tool-item">
+                            <div class="tool-item-name">write_file</div>
+                            <div class="tool-item-desc">Create or modify files</div>
+                        </li>
+                        <li class="tool-item">
+                            <div class="tool-item-name">run_code</div>
+                            <div class="tool-item-desc">Execute Python scripts</div>
+                        </li>
+                        <li class="tool-item">
+                            <div class="tool-item-name">pythia_generate</div>
+                            <div class="tool-item-desc">Create Pythia8 scripts</div>
+                        </li>
+                        <li class="tool-item">
+                            <div class="tool-item-name">extract_future_work</div>
+                            <div class="tool-item-desc">Analyze literature review</div>
+                        </li>
+                        <li class="tool-item">
+                            <div class="tool-item-name">parse_results</div>
+                            <div class="tool-item-desc">Analyze simulation output</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pythia Section -->
+        <section id="pythia" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon cyan">⚛️</div>
+                    <h2 class="card-title">Pythia8 Script Generator</h2>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Generate Pythia8 Monte Carlo simulation scripts using the 
+                    <a href="https://pypi.org/project/pythia8mc/" target="_blank" style="color: var(--accent-cyan);">pythia8mc</a> package.
+                </p>
+                
+                <div class="pythia-form">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Script Type</label>
+                            <select class="form-select" id="scriptType">
+                                <option value="basic">Basic Event Generation</option>
+                                <option value="histogram">With Histogramming</option>
+                                <option value="analysis">Full Analysis</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Physics Process</label>
+                            <select class="form-select" id="processType">
+                                <option value="minbias">Minimum Bias (Soft QCD)</option>
+                                <option value="qcd">Hard QCD</option>
+                                <option value="higgs">Higgs Production</option>
+                                <option value="top">Top Quark Pairs</option>
+                                <option value="w">W Boson</option>
+                                <option value="z">Z Boson</option>
+                                <option value="dijet">Dijet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Energy (GeV)</label>
+                            <input type="number" class="form-input" id="energy" value="13000">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Number of Events</label>
+                            <input type="number" class="form-input" id="nevents" value="10000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Script Name</label>
+                            <input type="text" class="form-input" id="scriptName" placeholder="auto-generated">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generatePythiaScript()">Generate Script</button>
+                </div>
+            </div>
+
+            <div class="card" id="pythiaOutput" style="display: none;">
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-filename" id="pythiaFilename">simulation.py</span>
+                        <button class="code-copy" onclick="copyCode()">Copy</button>
+                    </div>
+                    <pre class="code-content" id="pythiaCode"></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Section -->
+        <section id="workflow" class="section">
+            <div class="workflow-diagram">
+                <h2 class="workflow-title">Complete Research Workflow</h2>
+                <div class="workflow-nodes">
+                    <div class="workflow-node" onclick="highlightNode(this, 'Read literature review and extract future work')">
+                        <div class="workflow-node-icon">📖</div>
+                        <div class="workflow-node-label">Read</div>
+                    </div>
+                    <div class="workflow-node" onclick="highlightNode(this, 'Analyze and select promising research direction')">
+                        <div class="workflow-node-icon">🔍</div>
+                        <div class="workflow-node-label">Analyze</div>
+                    </div>
+                    <div class="workflow-node" onclick="highlightNode(this, 'Learn Pythia8 API and plan simulation')">
+                        <div class="workflow-node-icon">📚</div>
+                        <div class="workflow-node-label">Learn</div>
+                    </div>
+                    <div class="workflow-node" onclick="highlightNode(this, 'Generate Pythia8 simulation code')">
+                        <div class="workflow-node-icon">💻</div>
+                        <div class="workflow-node-label">Code</div>
+                    </div>
+                    <div class="workflow-node" onclick="highlightNode(this, 'Execute simulation and collect data')">
+                        <div class="workflow-node-icon">⚡</div>
+                        <div class="workflow-node-label">Execute</div>
+                    </div>
+                    <div class="workflow-node" onclick="highlightNode(this, 'Analyze results and compute statistics')">
+                        <div class="workflow-node-icon">📊</div>
+                        <div class="workflow-node-label">Results</div>
+                    </div>
+                    <div class="workflow-node" onclick="highlightNode(this, 'Write research article in LaTeX')">
+                        <div class="workflow-node-icon">📝</div>
+                        <div class="workflow-node-label">Write</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="workflowInfo">
+                <div class="card-header">
+                    <div class="card-icon purple">ℹ️</div>
+                    <h3 class="card-title">Workflow Information</h3>
+                </div>
+                <p style="color: var(--text-secondary);">
+                    Click on any node in the workflow diagram to learn more about that step.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon blue">🎯</div>
+                        <h3 class="card-title">Key Features</h3>
+                    </div>
+                    <ul style="color: var(--text-secondary); padding-left: 1.25rem; line-height: 1.8;">
+                        <li>Autonomous reasoning with ReAct loop</li>
+                        <li>Tool-augmented AI capabilities</li>
+                        <li>Pythia8mc integration for simulations</li>
+                        <li>LaTeX article generation</li>
+                        <li>Safe code execution in sandbox</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon emerald">📦</div>
+                        <h3 class="card-title">Installation</h3>
+                    </div>
+                    <div class="code-container">
+                        <pre class="code-content"><span class="comment"># Install Pythia8 Monte Carlo</span>
+pip install pythia8mc
+
+<span class="comment"># Install dependencies</span>
+pip install numpy matplotlib openai</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            ReAct Particle Physics Framework | Powered by 
+            <a href="https://pypi.org/project/pythia8mc/" target="_blank">Pythia8mc</a> |
+            <a href="https://pythia.org/" target="_blank">PYTHIA Documentation</a>
+        </p>
+    </footer>
+
+    <script>
+        // Theme toggle with system preference detection
+        const themeToggle = document.getElementById('themeToggle');
+        
+        // Check for saved theme preference or system preference
+        function getPreferredTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                return savedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function setTheme(theme) {
+            if (theme === 'auto') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.removeItem('theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            }
+        }
+
+        // Initialize theme
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            setTheme(currentTheme);
+        }
+
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                setTheme('light');
+            } else if (currentTheme === 'light') {
+                // Reset to system preference
+                setTheme('auto');
+            } else {
+                // Currently auto, set to opposite of system
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(systemDark ? 'light' : 'dark');
+            }
+        });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                // Only react if no manual preference is set
+                document.documentElement.removeAttribute('data-theme');
+            }
+        });
+
+        // Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.section).classList.add('active');
+            });
+        });
+
+        // Pipeline functions
+        function runFullPipeline() {
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            const output = document.getElementById('pipelineOutput');
+            const log = document.getElementById('pipelineLog');
+            const progress = document.getElementById('pipelineProgress');
+            
+            output.style.display = 'block';
+            log.textContent = '';
+            
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    document.getElementById(step).classList.add('completed');
+                    progress.style.width = ((index + 1) / steps.length * 100) + '%';
+                    
+                    const messages = [
+                        '✓ Step 1: Generated 30 search queries (10 results, 10 logical, 10 future)',
+                        '✓ Step 2: Downloaded 11 PDFs from arXiv',
+                        '✓ Step 3: Created vector database with 1,247 text chunks',
+                        '✓ Step 4: Generated 3-stage literature review (draft1.tex, draft2.tex, final_review.tex)'
+                    ];
+                    log.textContent += messages[index] + '\n';
+                }, (index + 1) * 1000);
+            });
+        }
+
+        function resetPipeline() {
+            document.querySelectorAll('.pipeline-step').forEach(step => {
+                step.classList.remove('completed', 'active');
+            });
+            document.getElementById('pipelineProgress').style.width = '0%';
+            document.getElementById('pipelineOutput').style.display = 'none';
+        }
+
+        // Chat functions
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const messages = document.getElementById('chatMessages');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            // Add user message
+            messages.innerHTML += `
+                <div class="message user">
+                    <div class="message-label">You</div>
+                    <div class="message-bubble">${text}</div>
+                </div>
+            `;
+            
+            input.value = '';
+            
+            // Simulate agent response
+            setTimeout(() => {
+                const response = generateAgentResponse(text);
+                messages.innerHTML += response;
+                messages.scrollTop = messages.scrollHeight;
+            }, 1000);
+        }
+
+        function generateAgentResponse(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerQuery.includes('pythia') || lowerQuery.includes('simulation')) {
+                return `
+                    <div class="message agent">
+                        <div class="message-label">ReAct Agent</div>
+                        <div class="message-bubble">
+                            <div class="thought-bubble">
+                                Thought: The user wants to know about Pythia8 simulations. I should explain 
+                                the available processes and how to generate scripts.
+                            </div>
+                            <div class="action-bubble">
+                                Action: pythia_generate
+                                Input: {"action": "list_processes"}
+                            </div>
+                            <p style="margin-top: 0.75rem;">
+                                I can generate Pythia8 simulation scripts for various physics processes:
+                                <br><br>
+                                • <strong>minbias</strong>: Minimum bias / soft QCD<br>
+                                • <strong>qcd</strong>: Hard QCD processes<br>
+                                • <strong>higgs</strong>: Higgs production via gluon fusion<br>
+                                • <strong>top</strong>: Top quark pair production<br>
+                                • <strong>w/z</strong>: Electroweak boson production
+                                <br><br>
+                                Go to the <strong>Pythia8</strong> tab to generate a script!
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (lowerQuery.includes('future work') || lowerQuery.includes('literature')) {
+                return `
+                    <div class="message agent">
+                        <div class="message-label">ReAct Agent</div>
+                        <div class="message-bubble">
+                            <div class="thought-bubble">
+                                Thought: I should use the extract_future_work tool to analyze the literature review.
+                            </div>
+                            <div class="action-bubble">
+                                Action: extract_future_work
+                                Input: {"tex_file": "output/final_review_20250901_002253.tex"}
+                            </div>
+                            <p style="margin-top: 0.75rem;">
+                                I can analyze the literature review to extract future work items. 
+                                First, make sure you've run the pipeline to generate the review, 
+                                then I'll categorize the items into:
+                                <br><br>
+                                • Simulation-based research directions<br>
+                                • Theoretical investigations<br>
+                                • Experimental proposals<br>
+                                • Methodological improvements
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="message agent">
+                    <div class="message-label">ReAct Agent</div>
+                    <div class="message-bubble">
+                        <div class="thought-bubble">
+                            Thought: Let me understand the user's request and determine the best approach.
+                        </div>
+                        <p style="margin-top: 0.75rem;">
+                            I'd be happy to help with that! You can ask me about:
+                            <br><br>
+                            • Generating Pythia8 simulation scripts<br>
+                            • Analyzing literature reviews<br>
+                            • Running the research pipeline<br>
+                            • Understanding physics processes<br>
+                            <br>
+                            What specific aspect would you like to explore?
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Pythia generator
+        function generatePythiaScript() {
+            const type = document.getElementById('scriptType').value;
+            const process = document.getElementById('processType').value;
+            const energy = document.getElementById('energy').value;
+            const nevents = document.getElementById('nevents').value;
+            
+            const output = document.getElementById('pythiaOutput');
+            const code = document.getElementById('pythiaCode');
+            const filename = document.getElementById('pythiaFilename');
+            
+            filename.textContent = `pythia_${process}_${type}.py`;
+            
+            const script = `<span class="comment">"""
+Pythia8 Event Generation Script
+Process: ${process}
+Energy: ${energy} GeV
+Events: ${nevents}
+"""</span>
+
+<span class="keyword">import</span> pythia8mc
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+
+<span class="keyword">def</span> <span class="function">main</span>():
+    <span class="comment"># Initialize Pythia</span>
+    pythia = pythia8mc.Pythia()
+    
+    <span class="comment"># Beam settings</span>
+    pythia.readString(<span class="string">"Beams:idA = 2212"</span>)  <span class="comment"># proton</span>
+    pythia.readString(<span class="string">"Beams:idB = 2212"</span>)  <span class="comment"># proton</span>
+    pythia.readString(<span class="string">"Beams:eCM = ${energy}"</span>)
+    
+    <span class="comment"># Process settings</span>
+    pythia.readString(<span class="string">"${getProcessSetting(process)}"</span>)
+    
+    <span class="comment"># Initialize</span>
+    pythia.init()
+    
+    <span class="comment"># Event loop</span>
+    n_events = <span class="number">${nevents}</span>
+    pt_values = []
+    
+    <span class="keyword">for</span> i_event <span class="keyword">in</span> <span class="function">range</span>(n_events):
+        <span class="keyword">if not</span> pythia.next():
+            <span class="keyword">continue</span>
+        
+        event = pythia.event
+        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(event.size()):
+            p = event[i]
+            <span class="keyword">if</span> p.isFinal() <span class="keyword">and</span> p.isCharged():
+                pt_values.append(p.pT())
+    
+    <span class="comment"># Statistics</span>
+    pythia.stat()
+    
+    <span class="function">print</span>(<span class="string">f"Mean pT: {np.mean(pt_values):.3f} GeV"</span>)
+    <span class="function">print</span>(<span class="string">f"Generated {n_events} events successfully!"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    main()`;
+            
+            code.innerHTML = script;
+            output.style.display = 'block';
+        }
+
+        function getProcessSetting(process) {
+            const settings = {
+                'minbias': 'SoftQCD:all = on',
+                'qcd': 'HardQCD:all = on',
+                'higgs': 'HiggsSM:gg2H = on',
+                'top': 'Top:gg2ttbar = on',
+                'w': 'WeakSingleBoson:ffbar2W = on',
+                'z': 'WeakSingleBoson:ffbar2gmZ = on',
+                'dijet': 'HardQCD:gg2gg = on'
+            };
+            return settings[process] || settings['minbias'];
+        }
+
+        function copyCode() {
+            const code = document.getElementById('pythiaCode').innerText;
+            navigator.clipboard.writeText(code);
+            
+            const btn = document.querySelector('.code-copy');
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        }
+
+        // Workflow highlight
+        function highlightNode(node, description) {
+            document.querySelectorAll('.workflow-node').forEach(n => {
+                n.style.borderColor = 'var(--border-color)';
+                n.style.boxShadow = 'none';
+            });
+            
+            node.style.borderColor = 'var(--accent-cyan)';
+            node.style.boxShadow = '0 0 30px var(--glow-blue)';
+            
+            document.querySelector('#workflowInfo p').textContent = description;
+        }
+
+        // Enter key for chat
+        document.getElementById('chatInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
+

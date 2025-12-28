@@ -1,0 +1,177 @@
+# ============================================================================
+# RAG-RAW Project Configuration
+# ============================================================================
+# 项目配置文件 - 用于统一管理项目路径和设置
+# 更新日期: 2025-01-XX
+# ============================================================================
+
+# 项目基础路径
+# 注意：BASE_DIR 应该设置为项目根目录的绝对路径
+# 在 setup.sh 中会自动检测并设置
+project:
+  name: "RAG-RAW"
+  version: "2.0"
+  description: "RAG文献综述与ReAct物理研究系统"
+  
+# 虚拟环境配置
+virtual_env:
+  name: "ai_scientist_env"
+  python_version: ">=3.10"
+  
+# 目录路径配置
+paths:
+  # 项目根目录（自动检测，无需手动设置）
+  base_dir: "${PROJECT_ROOT}"
+  
+  # 输出目录
+  output_dir: "${PROJECT_ROOT}/output"
+  
+  # Pythia8 工作空间
+  pythia_workspace: "${PROJECT_ROOT}/pythia_workspace"
+  pythia_scripts: "${PROJECT_ROOT}/pythia_workspace/scripts"
+  pythia_events: "${PROJECT_ROOT}/pythia_workspace/events"
+  pythia_results: "${PROJECT_ROOT}/pythia_workspace/results"
+  pythia_figures: "${PROJECT_ROOT}/pythia_workspace/figures"
+  
+  # 向量数据库存储路径
+  vectordb_dir: "${PROJECT_ROOT}/ragdb"
+  
+  # 下载的PDF存储路径
+  pdf_download_dir: "${PROJECT_ROOT}/pdfs"
+  
+  # React会话记录
+  react_sessions: "${PROJECT_ROOT}/output/react_sessions"
+  
+  # BibTeX文件目录
+  bib_dir: "${PROJECT_ROOT}/bib"
+
+# 模型配置
+models:
+  # BGE-M3 嵌入模型路径
+  # 如果模型不存在，setup.sh 会提示下载
+  bge_model_path: "${PROJECT_ROOT}/models/bge-m3"
+  
+  # 是否使用CUDA加速
+  use_cuda: true
+  
+  # 批处理大小
+  batch_size: 4
+  
+  # 最大序列长度
+  max_length: 1024
+
+# API配置
+# 注意：实际的API密钥应该在 .env 文件中设置
+api:
+  # 支持的API提供商: "mimo", "openai", "custom"
+  provider: "mimo"
+  
+  # MIMO API配置
+  mimo:
+    api_key_env: "MIMO_API_KEY"
+    base_url: "https://api.xiaomimimo.com/v1"
+    model_name: "mimo-v2-flash"
+  
+  # OpenAI API配置
+  openai:
+    api_key_env: "OPENAI_API_KEY"
+    base_url: "https://api.openai.com/v1"
+    model_name: "gpt-4"
+  
+  # 自定义API配置
+  custom:
+    api_key_env: "CUSTOM_API_KEY"
+    base_url: ""
+    model_name: ""
+
+# ReAct Agent配置
+react_agent:
+  # 最大迭代次数
+  max_iterations: 20
+  
+  # 工具执行最大重试次数
+  max_tool_retries: 3
+  
+  # 是否显示详细输出
+  verbose: true
+  
+  # 温度参数
+  temperature: 0.7
+  
+  # 代码执行超时时间（秒）
+  code_execution_timeout: 300
+  
+  # 最大输出大小（字符数）
+  max_output_size: 50000
+
+# 文件操作配置
+file_operations:
+  # 可读文件扩展名
+  readable_extensions:
+    - ".tex"
+    - ".py"
+    - ".txt"
+    - ".json"
+    - ".md"
+    - ".csv"
+    - ".dat"
+  
+  # 可写文件扩展名
+  writable_extensions:
+    - ".tex"
+    - ".py"
+    - ".txt"
+    - ".json"
+    - ".md"
+  
+  # 最大文件大小（字节）
+  max_file_size: 10485760  # 10 MB
+
+# Pythia8配置
+pythia8:
+  # 默认束流设置
+  default_beam: "p p"
+  
+  # 默认能量（GeV）
+  default_energy: 13000  # LHC能量
+  
+  # 默认事件数
+  default_nevents: 10000
+  
+  # 常用过程类型
+  processes:
+    qcd: "HardQCD:all = on"
+    minbias: "SoftQCD:all = on"
+    higgs: "HiggsSM:gg2H = on"
+    top: "Top:gg2ttbar = on"
+    w: "WeakSingleBoson:ffbar2W = on"
+    z: "WeakSingleBoson:ffbar2gmZ = on"
+    dijet: "HardQCD:gg2gg = on\nHardQCD:gg2qqbar = on"
+
+# 文献综述生成配置
+literature_review:
+  # 查询生成数量
+  num_queries: 30
+  
+  # 向量检索top-k
+  top_k: 20
+  
+  # 生成阶段数
+  num_stages: 3
+
+# 依赖包配置
+dependencies:
+  # 核心依赖文件
+  requirements_file: "requirements.txt"
+  
+  # 可选依赖
+  optional:
+    - "pythia8mc"  # Pythia8蒙特卡洛模拟器
+    - "arxiv2bib"  # arXiv到BibTeX转换工具
+
+# 系统要求
+system_requirements:
+  python_version: ">=3.10"
+  cuda_optional: true
+  disk_space_gb: 5  # 推荐磁盘空间（GB）
+

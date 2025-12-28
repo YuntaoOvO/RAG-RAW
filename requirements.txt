@@ -1,0 +1,60 @@
+# ============================================================================
+# Science RAG Agent - Dependencies
+# ============================================================================
+# Python: >=3.8
+# 更新日期: 2025-10-22
+
+# 核心依赖
+# ----------------------------------------------------------------------------
+# 向量嵌入与检索
+FlagEmbedding>=1.2.0
+chromadb>=0.4.0
+torch>=2.0.0
+
+# LangChain生态
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-text-splitters>=0.0.1
+pypdf>=5.0.0
+# AI对话
+openai>=1.0.0
+python-dotenv>=1.0.0
+
+# 基础工具
+numpy>=1.24.0
+tqdm>=4.65.0
+requests>=2.28.0
+
+# Web界面
+streamlit>=1.28.0
+
+# 文献管理
+arxiv>=1.4.0
+
+# 可选依赖
+# ----------------------------------------------------------------------------
+# 数据可视化
+matplotlib>=3.7.0
+
+# 调试工具
+icecream>=2.1.0
+
+# ============================================================================
+# 安装指南
+# ============================================================================
+#
+# 标准安装：
+#   pip install -r requirements.txt
+#
+# GPU加速安装（推荐用于生产环境）：
+#   # 1. 安装CUDA版PyTorch（根据CUDA版本选择）
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#   
+#   # 2. 安装其他依赖
+#   pip install -r requirements.txt
+#
+# 注意：
+#   - arxiv2bib 如需使用，需单独安装：
+#     pip install git+https://github.com/nathangrigg/arxiv2bib.git
+#
+# ============================================================================
